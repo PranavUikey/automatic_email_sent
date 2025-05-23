@@ -1,0 +1,6 @@
+flask
+gspread
+pandas
+oauth2client
+PyYAML
+dotenv
