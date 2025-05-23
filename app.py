@@ -20,7 +20,6 @@ def send_job_email():
 
     try:
         
-        load_dotenv()
         # Open the Google Sheet
         sheet = client.open("Job_Coll").sheet1
         data = sheet.get_all_records()
@@ -58,11 +57,7 @@ def send_job_email():
         # Load email configuration
 
 
-        email_config = {
-            'SMTP_USERNAME': os.getenv('JOB_SMTP_USERNAME'),
-            'SMTP_PASSWORD': os.getenv('JOB_SMTP_PASSWORD'),
-            # Add other fields as needed
-        }
+        email_config = server_config['JOB']
 
         # Create email
         msg = MIMEMultipart()
@@ -125,11 +120,7 @@ def send_course_email():
             logger.warning("No valid technologies found. Using default content.")
             interests = ['course_default']
 
-        email_config = {
-            'SMTP_USERNAME': os.getenv('COURSE_SMTP_USERNAME'),
-            'SMTP_PASSWORD': os.getenv('COURSE_SMTP_PASSWORD'),
-            # Add other fields as needed
-        }
+        
         home = 'https://www.aiadventures.in/'
 
         # Build course link HTML
@@ -148,6 +139,7 @@ def send_course_email():
         body = template.format(name=name, course_links=tech_list_html)
 
         # Compose and send email
+        email_config = server_config['COURSE']
         msg = MIMEMultipart()
         msg["From"] = email_config['SMTP_USERNAME']
         msg["To"] = email
@@ -171,19 +163,38 @@ def send_course_email():
 
 
 if __name__ == "__main__":
-    # Load configuration
+    # Load environment variables
+    load_dotenv()
+
+    # Load configuration and resolve environment variables
     with open('config.yaml') as yaml_file:
-        server_config = yaml.safe_load(yaml_file)
+        raw_config = yaml.safe_load(yaml_file)
 
+    server_config = {
+        account: {
+            key: os.getenv(value.strip("${}"), value)  # Resolve env vars or use default
+            for key, value in details.items()
+        }
+        for account, details in raw_config['EMAIL_ACCOUNTS'].items()
+    }
 
-    SERVICE_ACCOUNT_FILE = "automation-450206-b4c4c3a8a4ec.json"
+    # Set up logging
+    logger.info("Starting email sending process...")
 
+    # Set up Google Sheets API
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+    if not SERVICE_ACCOUNT_FILE:
+        logger.error("Google credentials file path is missing. Check your .env file.")
+        exit(1)
+
     creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACCOUNT_FILE, scope)
     client = gspread.authorize(creds)
 
     # Send emails
-    send_job_email()
-    send_course_email()
-    logger.info("All emails processed.")
-        
+    try:
+        send_job_email()
+        send_course_email()
+        logger.info("All emails processed.")
+    except Exception as e:
+        logger.error(f"Error during email processing: {e}")

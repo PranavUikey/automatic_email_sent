@@ -1,12 +1,12 @@
 EMAIL_ACCOUNTS:
   JOB:
     SMTP_SERVER: smtp.hostinger.com
-    SMTP_PORT: 465
-    SMTP_USERNAME: <your-job-email>
-    SMTP_PASSWORD: <your-job-password> 
+    SMTP_PORT: '465'
+    SMTP_USERNAME: ${JOB_SMTP_USERNAME}
+    SMTP_PASSWORD: ${JOB_SMTP_PASSWORD}
 
   COURSE:
     SMTP_SERVER: smtp.hostinger.com
-    SMTP_PORT: 465
-    SMTP_USERNAME: <your-course-email>
-    SMTP_PASSWORD: <your-course-password>
+    SMTP_PORT: '465'
+    SMTP_USERNAME: ${SMTP_COURSE_USERNAME}
+    SMTP_PASSWORD: ${SMTP_COURSE_PASSWORD}

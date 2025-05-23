@@ -170,3 +170,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+
+
+# manually added files 
+automation-450206-b4c4c3a8a4ec.json
+test.ipynb
