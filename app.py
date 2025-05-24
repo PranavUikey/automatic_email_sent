@@ -13,7 +13,7 @@ from datetime import datetime
 
 
 
-def send_job_email():
+def send_job_email(job_sender_name,job_sender_number):
     try:
         # Open the Google Sheet
         sheet = client.open("Job_Coll").sheet1
@@ -74,6 +74,7 @@ def send_job_email():
         logger.info(f"Connecting to SMTP server: {email_config['SMTP_SERVER']} on port {email_config['SMTP_PORT']}")
 
         # Send email
+        logger.info(f"📤 Sending job colab request to {recipient_email}")
         with smtplib.SMTP_SSL(email_config['SMTP_SERVER'], email_config['SMTP_PORT']) as server:
             server.login(email_config['SMTP_USERNAME'], email_config['SMTP_PASSWORD'])
             logger.info("Login successful, sending email...")
@@ -94,7 +95,7 @@ def send_job_email():
 
 
 
-def send_course_email():
+def send_course_email(course_sender_name, course_sender_number):
     try:
         # Open Google Sheet
         sheet = client.open("Untitled form submissions").sheet1
@@ -211,8 +212,9 @@ if __name__ == "__main__":
 
     # Send emails
     try:
-        send_job_email()
-        send_course_email()
+        send_job_email(job_sender_name,job_sender_number)
+        send_course_email(course_sender_name, course_sender_number)
+
         logger.info("All emails processed.")
     except Exception as e:
         logger.error(f"Error during email processing: {e}")
