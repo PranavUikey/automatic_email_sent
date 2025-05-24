@@ -5,6 +5,7 @@ Based on your interests, here are the recommended course links:<br>
 {course_links}
 </ul>
 We hope you find them helpful.<br><br>
-<b>Please call <a href="tel:+91 {course_sender_number}">+91 {course_sender_number}</a> to book your slot for free demo sessions.</b><br><br>
+Please call <b>+91 {course_sender_number}</b> to book your slot for <b>free demo sessions.</b><br><br>
 Regards,<br>
 <strong>{course_sender_name}</strong>
+<a href="https://www.aiadventures.in/">aiadventures</a>

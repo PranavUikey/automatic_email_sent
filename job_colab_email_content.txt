@@ -13,10 +13,10 @@ Thank you for considering this opportunity. I would be delighted to discuss this
 Looking forward to your response.
 
 <p>Best regards,</p>
-<p><b>{job_sender_name}/b><br>
+<p><b>{job_sender_name}</b><br>
 Placement Coordinator<br>
 <b>AIAdventures</b></p>
 
-<p>Contact No: <b><a href="Phone Number: +91 {job_sender_number}>+91 {job_sender_number}</a> </b><br>
+<b>Contact No: +91 {job_sender_number} </b><br>
 
 <a href="https://www.aiadventures.in/">aiadventures</a>
