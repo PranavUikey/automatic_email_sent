@@ -8,18 +8,13 @@ from dotenv import load_dotenv
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from datetime import datetime
 
 
 
 
-
-# Connect to Google Sheets API
 def send_job_email():
-
-    
-
     try:
-        
         # Open the Google Sheet
         sheet = client.open("Job_Coll").sheet1
         data = sheet.get_all_records()
@@ -29,12 +24,24 @@ def send_job_email():
         recipient_name = last_entry.get('Name')
         recipient_email = last_entry.get('Email-ID')
 
-        # Get headers and check for 'Email Status'
+        # Get headers
         header = sheet.row_values(1)
+
+        # Ensure 'Email Status' exists
         if "Email Status" not in header:
             header.append("Email Status")
-            sheet.insert_row(header, 1)
+
+        # Ensure 'Email Sent DateTime' exists after 'Email Status'
+        if "Email Sent DateTime" not in header:
+            status_index = header.index("Email Status")
+            header.insert(status_index + 1, "Email Sent DateTime")
+
+        # Update header row
+        sheet.update('1:1', [header])
+
+        # Recalculate column indexes
         status_col_index = header.index("Email Status") + 1
+        datetime_col_index = header.index("Email Sent DateTime") + 1
 
         # Skip if email already sent
         status_cell_value = sheet.cell(last_row_index, status_col_index).value
@@ -47,16 +54,14 @@ def send_job_email():
             logger.warning("Email ID missing in the last entry.")
             return
 
+        # Load email content
         with open('job_colab_email_content.txt') as f:
             content = f.read()
 
         subject = "Collaboration Request: AI & ML Talent from AIAdventures"
         message = f"Dear {recipient_name},<br>{content}"
 
-
-        # Load email configuration
-
-
+        # Email config
         email_config = server_config['JOB']
 
         # Create email
@@ -68,7 +73,7 @@ def send_job_email():
 
         logger.info(f"Connecting to SMTP server: {email_config['SMTP_SERVER']} on port {email_config['SMTP_PORT']}")
 
-        # Connect and send email
+        # Send email
         with smtplib.SMTP_SSL(email_config['SMTP_SERVER'], email_config['SMTP_PORT']) as server:
             server.login(email_config['SMTP_USERNAME'], email_config['SMTP_PASSWORD'])
             logger.info("Login successful, sending email...")
@@ -76,13 +81,16 @@ def send_job_email():
 
         logger.info(f"✅ Email sent successfully to {recipient_email}")
         sheet.update_cell(last_row_index, status_col_index, "✅")
+        sheet.update_cell(last_row_index, datetime_col_index, datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     except Exception as e:
         logger.error(f"❌ Error sending email: {e}")
-        sheet.update_cell(last_row_index, status_col_index, f"❌ {str(e)}")
-
-
-
+        try:
+            # Safely update only if header exists and indexes are valid
+            if 'status_col_index' in locals() and 'last_row_index' in locals():
+                sheet.update_cell(last_row_index, status_col_index, f"❌ {str(e)}")
+        except:
+            pass  # Prevent double error logging
 
 
 
@@ -102,11 +110,8 @@ def send_course_email():
             sheet.update_cell(1, len(headers) + 1, 'Email Status')
             email_status_col = len(headers) + 1
 
-        # Don't send if already marked as ✅
-        existing_status = sheet.cell(last_row_index, email_status_col).value
-        if existing_status == '✅':
-            logger.info(f"⚠️ Email already sent to row {last_row_index}, skipping.")
-            return
+        
+            
 
         # Extract student info
         name = last_entry.get('Name')
@@ -145,6 +150,13 @@ def send_course_email():
         msg["To"] = email
         msg["Subject"] = "Detailed course content from AIAdventures"
         msg.attach(MIMEText(body, "html"))
+
+
+        # Don't send if already marked as ✅
+        existing_status = sheet.cell(last_row_index, email_status_col).value
+        if existing_status == '✅':
+            logger.info(f"✅ Email already sent to {email}, skipping.")
+            return
 
         logger.info(f"📤 Sending course links to {email}")
         with smtplib.SMTP_SSL(email_config['SMTP_SERVER'], email_config['SMTP_PORT']) as server:
