@@ -56,10 +56,10 @@ def send_job_email():
 
         # Load email content
         with open('job_colab_email_content.txt') as f:
-            content = f.read()
+            template = f.read()
 
-        subject = "Collaboration Request: AI & ML Talent from AIAdventures"
-        message = f"Dear {recipient_name},<br>{content}"
+
+        body = template.format(recipient_name= recipient_name, job_sender_name = job_sender_name, job_sender_number = job_sender_number)
 
         # Email config
         email_config = server_config['JOB']
@@ -68,8 +68,8 @@ def send_job_email():
         msg = MIMEMultipart()
         msg["From"] = email_config['SMTP_USERNAME']
         msg["To"] = recipient_email
-        msg["Subject"] = subject
-        msg.attach(MIMEText(message, "html"))
+        msg["Subject"] = "Collaboration Request: AI & ML Talent from AIAdventures"
+        msg.attach(MIMEText(body, "html"))
 
         logger.info(f"Connecting to SMTP server: {email_config['SMTP_SERVER']} on port {email_config['SMTP_PORT']}")
 
@@ -141,7 +141,7 @@ def send_course_email():
         with open('registration_mail_content.txt','r') as f:
           template = f.read()
 
-        body = template.format(name=name, course_links=tech_list_html)
+        body = template.format(name=name, course_links=tech_list_html, course_sender_name=course_sender_name, course_sender_number=course_sender_number)
 
         # Compose and send email
         email_config = server_config['COURSE']
@@ -202,6 +202,13 @@ if __name__ == "__main__":
 
     creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACCOUNT_FILE, scope)
     client = gspread.authorize(creds)
+
+    os.getenv("SENDER_NAME")
+    job_sender_name = os.getenv("JOB_SENDER_NAME")
+    job_sender_number = os.getenv("JOB_SENDER_NUMBER")
+
+    course_sender_name = os.getenv("COURSE_SENDER_NAME")
+    course_sender_number = os.getenv("COURSE_SENDER_NUMBER")
 
     # Send emails
     try:

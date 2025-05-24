@@ -5,6 +5,6 @@ Based on your interests, here are the recommended course links:<br>
 {course_links}
 </ul>
 We hope you find them helpful.<br><br>
-<b>Please call <a href="tel:+91 9021177563">+91 9021177563</a> to book your slot for free demo sessions.</b><br><br>
+<b>Please call <a href="tel:+91 {course_sender_number}">+91 {course_sender_number}</a> to book your slot for free demo sessions.</b><br><br>
 Regards,<br>
-<strong>Team AIAdventures</strong>
+<strong>{course_sender_name}</strong>
