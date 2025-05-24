@@ -203,7 +203,6 @@ if __name__ == "__main__":
     creds = ServiceAccountCredentials.from_json_keyfile_name(SERVICE_ACCOUNT_FILE, scope)
     client = gspread.authorize(creds)
 
-    os.getenv("SENDER_NAME")
     job_sender_name = os.getenv("JOB_SENDER_NAME")
     job_sender_number = os.getenv("JOB_SENDER_NUMBER")
 
