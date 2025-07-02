@@ -1,11 +1,11 @@
 Dear {name},<br><br>
 Thank you for visiting <strong>AIAdventures</strong>.<br><br>
-Based on your interests, here are the recommended course links:<br>
+Based on your interests, here are the recommended course content in attached below:<br>
 <ul>
-{course_links}
+{course_pdf}
 </ul>
 We hope you find them helpful.<br><br>
 Please call <b>+91 {course_sender_number}</b> to book your slot for <b>free demo sessions.</b><br><br>
 Regards,<br>
-<strong>{course_sender_name}</strong>
+<strong>{course_sender_name}</strong><br>
 <a href="https://www.aiadventures.in/">aiadventures</a>

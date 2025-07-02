@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 from datetime import datetime
 
 
@@ -95,6 +96,7 @@ def send_job_email(job_sender_name,job_sender_number):
 
 
 
+
 def send_course_email(course_sender_name, course_sender_number):
     try:
         # Open Google Sheet
@@ -111,40 +113,38 @@ def send_course_email(course_sender_name, course_sender_number):
             sheet.update_cell(1, len(headers) + 1, 'Email Status')
             email_status_col = len(headers) + 1
 
-        
-            
-
         # Extract student info
         name = last_entry.get('Name')
         email = last_entry.get('Email')
-        interests_raw = last_entry.get('Intrested Technology', '')
+        interests_raw = last_entry.get('Intrested Technologies', '')
 
-        # Normalize input
-        interests_cleaned = [i.strip() for i in interests_raw.strip().split(',') if i.strip()]
-        interests = [tech.lower().replace(" ", "_") for tech in interests_cleaned]
-        if not interests:
-            logger.warning("No valid technologies found. Using default content.")
-            interests = ['course_default']
+        # Normalize input and decide PDF
+        li = interests_raw.split(',')
+        for i in range(len(li)):
+            li[i] = li[i].strip().lower().replace(" ", "_")
 
-        
-        home = 'https://www.aiadventures.in/'
+        interests = li if any(li) else ['course_default']
 
-        # Build course link HTML
-        tech_list_html = ""
-        for interest in interests:
-            course_name = interest.replace("_", " ").title()
-            course_id = interest.replace("_", "-")
-            url_suffix = '-course-in-pune/' if course_id not in ['power-bi', 'gen-ai'] else '-course-pune/'
-            course_url = f"{home}{course_id}{url_suffix}"
-            tech_list_html += f'<li><a href="{course_url}" target="_blank">{course_name}</a></li>'
+        # Decide which PDF to attach
+        if 'gen_ai' in li:
+            selected_pdf = 'gen_ai_with_ml.pdf'
+        else:
+            selected_pdf = 'data_science_with_powerbi.pdf'
 
-        # Email content
-        with open('registration_mail_content.txt','r') as f:
-          template = f.read()
+        logger.info(f"📎 PDF to attach: {selected_pdf}")
 
-        body = template.format(name=name, course_links=tech_list_html, course_sender_name=course_sender_name, course_sender_number=course_sender_number)
+        # Email content using PDF name in template
+        with open('registration_mail_content.txt', 'r') as f:
+            template = f.read()
 
-        # Compose and send email
+        body = template.format(
+            name=name,
+            course_pdf=selected_pdf,
+            course_sender_name=course_sender_name,
+            course_sender_number=course_sender_number
+        )
+
+        # Compose email
         email_config = server_config['COURSE']
         msg = MIMEMultipart()
         msg["From"] = email_config['SMTP_USERNAME']
@@ -152,14 +152,22 @@ def send_course_email(course_sender_name, course_sender_number):
         msg["Subject"] = "Detailed course content from AIAdventures"
         msg.attach(MIMEText(body, "html"))
 
+        # Attach the selected PDF
+        try:
+            with open('course_content/'+selected_pdf, 'rb') as pdf_file:
+                part = MIMEApplication(pdf_file.read(), _subtype='pdf')
+                part.add_header('Content-Disposition', 'attachment', filename=selected_pdf)
+                msg.attach(part)
+        except Exception as e:
+            logger.warning(f"⚠️ Could not attach PDF: {selected_pdf} — {e}")
 
-        # Don't send if already marked as ✅
+        # Check if already sent
         existing_status = sheet.cell(last_row_index, email_status_col).value
         if existing_status == '✅':
             logger.info(f"✅ Email already sent to {email}, skipping.")
             return
 
-        logger.info(f"📤 Sending course links to {email}")
+        logger.info(f"📤 Sending course email to {email}")
         with smtplib.SMTP_SSL(email_config['SMTP_SERVER'], email_config['SMTP_PORT']) as server:
             server.login(email_config['SMTP_USERNAME'], email_config['SMTP_PASSWORD'])
             server.sendmail(email_config['SMTP_USERNAME'], email, msg.as_string())
