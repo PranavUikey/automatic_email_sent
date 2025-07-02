@@ -126,7 +126,7 @@ def send_course_email(course_sender_name, course_sender_number):
         interests = li if any(li) else ['course_default']
 
         # Decide which PDF to attach
-        if 'gen_ai' in li:
+        if 'gen_ai'  in li or 'machine_learning' in li or 'deep_learning' in li:
             selected_pdf = 'gen_ai_with_ml.pdf'
         else:
             selected_pdf = 'data_science_with_powerbi.pdf'
