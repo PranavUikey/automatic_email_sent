@@ -1,3 +1,42 @@
+# name: Run app.py on Sheet Update
+
+# on:
+#   repository_dispatch:
+#     types: [sheet-updated]
+
+# jobs:
+#   run-script:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout Repository
+#         uses: actions/checkout@v3
+
+#       - name: Set Up Python
+#         uses: actions/setup-python@v3
+#         with:
+#           python-version: '3.9'
+
+#       - name: Install Dependencies
+#         run: pip install -r requirements.txt
+
+#       - name: Restore Google credentials from secret
+#         run: |
+#           echo "${{ secrets.GOOGLE_CREDENTIALS_B64 }}" | base64 -d > automation-450206-b4c4c3a8a4ec.json
+#           echo "GOOGLE_APPLICATION_CREDENTIALS=automation-450206-b4c4c3a8a4ec.json" >> .env
+#           echo "SMTP_JOB_USERNAME=${{ secrets.SMTP_JOB_USERNAME }}" >> .env
+#           echo "SMTP_JOB_PASSWORD=${{ secrets.SMTP_JOB_PASSWORD }}" >> .env
+#           echo "SMTP_COURSE_USERNAME=${{ secrets.SMTP_COURSE_USERNAME }}" >> .env
+#           echo "SMTP_COURSE_PASSWORD=${{ secrets.SMTP_COURSE_PASSWORD }}" >> .env
+#           echo "JOB_SENDER_NAME=${{ secrets.JOB_SENDER_NAME }}" >> .env
+#           echo "JOB_SENDER_NUMBER=${{ secrets.JOB_SENDER_NUMBER }}" >> .env
+#           echo "COURSE_SENDER_NAME=${{ secrets.COURSE_SENDER_NAME }}" >> .env
+#           echo "COURSE_SENDER_NUMBER=${{ secrets.COURSE_SENDER_NUMBER }}" >> .env
+
+#       - name: Run app.py
+#         run: python app.py
+
+
 name: Run app.py on Sheet Update
 
 on:
@@ -20,14 +59,29 @@ jobs:
       - name: Install Dependencies
         run: pip install -r requirements.txt
 
-      - name: Restore Google credentials from secret
+      - name: Restore Google credentials & env vars from secrets
         run: |
+          # Restore Google credentials file
           echo "${{ secrets.GOOGLE_CREDENTIALS_B64 }}" | base64 -d > automation-450206-b4c4c3a8a4ec.json
+          
+          # Write to .env file for load_dotenv()
           echo "GOOGLE_APPLICATION_CREDENTIALS=automation-450206-b4c4c3a8a4ec.json" >> .env
           echo "SMTP_JOB_USERNAME=${{ secrets.SMTP_JOB_USERNAME }}" >> .env
           echo "SMTP_JOB_PASSWORD=${{ secrets.SMTP_JOB_PASSWORD }}" >> .env
           echo "SMTP_COURSE_USERNAME=${{ secrets.SMTP_COURSE_USERNAME }}" >> .env
           echo "SMTP_COURSE_PASSWORD=${{ secrets.SMTP_COURSE_PASSWORD }}" >> .env
+          echo "JOB_SENDER_NAME=${{ secrets.JOB_SENDER_NAME }}" >> .env
+          echo "JOB_SENDER_NUMBER=${{ secrets.JOB_SENDER_NUMBER }}" >> .env
+          echo "COURSE_SENDER_NAME=${{ secrets.COURSE_SENDER_NAME }}" >> .env
+          echo "COURSE_SENDER_NUMBER=${{ secrets.COURSE_SENDER_NUMBER }}" >> .env
+
+      - name: Debug Environment Vars (safe check)
+        run: |
+          echo "JOB_SENDER_NAME=$JOB_SENDER_NAME"
+          echo "COURSE_SENDER_NAME=$COURSE_SENDER_NAME"
+        env:
+          JOB_SENDER_NAME: ${{ secrets.JOB_SENDER_NAME }}
+          COURSE_SENDER_NAME: ${{ secrets.COURSE_SENDER_NAME }}
 
       - name: Run app.py
         run: python app.py

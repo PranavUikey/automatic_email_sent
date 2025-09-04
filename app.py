@@ -27,7 +27,7 @@ def send_job_email(job_sender_name,job_sender_number):
 
         # Get headers
         header = sheet.row_values(1)
-
+        print(job_sender_name, job_sender_number)
         # Ensure 'Email Status' exists
         if "Email Status" not in header:
             header.append("Email Status")
@@ -151,6 +151,8 @@ def send_course_email(course_sender_name, course_sender_number):
         msg["To"] = email
         msg["Subject"] = "Detailed course content from AIAdventures"
         msg.attach(MIMEText(body, "html"))
+
+        print(course_sender_name, course_sender_number)
 
         # Attach the selected PDF
         try:
